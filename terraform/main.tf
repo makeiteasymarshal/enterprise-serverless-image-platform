@@ -60,6 +60,27 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "processed" {
   }
 }
 
+resource "aws_s3_bucket_lifecycle_configuration" "incoming" {
+  bucket = aws_s3_bucket.incoming.id
+  rule {
+    id = "expire-pilot-uploads"
+    status = "Enabled"
+    filter { prefix = "incoming/" }
+    expiration { days = 30 }
+    noncurrent_version_expiration { noncurrent_days = 7 }
+  }
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "processed" {
+  bucket = aws_s3_bucket.processed.id
+  rule {
+    id = "expire-pilot-outputs"
+    status = "Enabled"
+    filter { prefix = "processed/" }
+    expiration { days = 30 }
+  }
+}
+
 resource "aws_s3_bucket_versioning" "incoming" {
   bucket = aws_s3_bucket.incoming.id
   versioning_configuration { status = "Enabled" }
