@@ -1,9 +1,9 @@
-name: Manual AWS deploy
+name: Manual AWS identity verification
 on:
   workflow_dispatch:
     inputs:
       confirm:
-        description: Type DEPLOY to allow Terraform apply
+        description: Type VERIFY to check the configured OIDC role. This does not deploy resources.
         required: true
         type: string
 
@@ -12,20 +12,13 @@ permissions:
   contents: read
 
 jobs:
-  deploy:
-    if: inputs.confirm == 'DEPLOY'
+  identity:
+    if: inputs.confirm == 'VERIFY'
     runs-on: ubuntu-latest
-    environment: aws-pilot
     steps:
-      - uses: actions/checkout@v4
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
           aws-region: ap-south-1
-      - uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: "1.9.8"
-      - run: terraform -chdir=terraform init
-      - run: terraform -chdir=terraform validate
-      - run: terraform -chdir=terraform plan -out=tfplan
-      - run: terraform -chdir=terraform apply tfplan
+      - name: Verify temporary AWS identity
+        run: aws sts get-caller-identity
