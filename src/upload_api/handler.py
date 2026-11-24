@@ -8,7 +8,6 @@ import uuid
 import boto3
 
 s3 = boto3.client("s3")
-BUCKET = os.environ["UPLOAD_BUCKET"]
 ALLOWED_TYPES = {"image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp"}
 SAFE_NAME = re.compile(r"[^A-Za-z0-9._-]+")
 
@@ -24,7 +23,7 @@ def lambda_handler(event: dict, context: object) -> dict:
         key = f"incoming/{uuid.uuid4().hex}-{safe_name}"
         url = s3.generate_presigned_url(
             "put_object",
-            Params={"Bucket": BUCKET, "Key": key, "ContentType": content_type},
+            Params={"Bucket": os.environ["UPLOAD_BUCKET"], "Key": key, "ContentType": content_type},
             ExpiresIn=300,
         )
         return _response(200, {"upload_url": url, "object_key": key,
