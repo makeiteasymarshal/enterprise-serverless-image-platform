@@ -53,7 +53,7 @@ Invoke-WebRequest -Method Put -Uri $result.upload_url -InFile ".\sample.png" -Co
 Check the authenticated status route with `GET $api/status?key=<object_key>` using the same Bearer token. Verify the processed object in the output bucket and inspect Lambda logs / DynamoDB record in the AWS Console.
 
 ## Destroy
-Run `..\\scripts\\cleanup.ps1` from the repository root to empty the versioned incoming bucket (including versions/delete markers) and the processed bucket. Then:
+Run `.\\scripts\\cleanup.ps1` from the repository root to empty the versioned incoming bucket (including versions/delete markers) and the processed bucket. Then:
 
 ```powershell
 terraform -chdir=terraform plan -destroy
