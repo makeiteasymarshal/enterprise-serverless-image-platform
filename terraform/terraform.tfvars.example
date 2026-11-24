@@ -1,0 +1,5 @@
+aws_region         = "ap-south-1"
+project_name       = "image-platform"
+lambda_timeout     = 60
+lambda_memory_size = 1024
+notification_email = ""
