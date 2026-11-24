@@ -291,12 +291,55 @@ resource "aws_lambda_function" "upload" {
   tags       = local.common_tags
 }
 
+resource "aws_cognito_user_pool" "users" {
+  name = "${local.name}-users"
+  auto_verified_attributes = ["email"]
+  password_policy {
+    minimum_length = 12
+    require_lowercase = true
+    require_numbers = true
+    require_symbols = true
+    require_uppercase = true
+    temporary_password_validity_days = 7
+  }
+  admin_create_user_config {
+    allow_admin_create_user_only = false
+  }
+  tags = local.common_tags
+}
+
+resource "aws_cognito_user_pool_client" "app" {
+  name = "${local.name}-app"
+  user_pool_id = aws_cognito_user_pool.users.id
+  generate_secret = false
+  explicit_auth_flows = ["ALLOW_USER_PASSWORD_AUTH", "ALLOW_USER_SRP_AUTH", "ALLOW_REFRESH_TOKEN_AUTH"]
+  prevent_user_existence_errors = "ENABLED"
+  access_token_validity = 60
+  id_token_validity = 60
+  refresh_token_validity = 7
+  token_validity_units {
+    access_token = "minutes"
+    id_token = "minutes"
+    refresh_token = "days"
+  }
+}
+
+resource "aws_apigatewayv2_authorizer" "jwt" {
+  api_id = aws_apigatewayv2_api.upload.id
+  authorizer_type = "JWT"
+  name = "cognito-jwt"
+  identity_sources = ["$request.header.Authorization"]
+  jwt_configuration {
+    audience = [aws_cognito_user_pool_client.app.id]
+    issuer = "https://cognito-idp.${var.aws_region}.amazonaws.com/${aws_cognito_user_pool.users.id}"
+  }
+}
 resource "aws_apigatewayv2_api" "upload" {
   name          = "${local.name}-upload-api"
   protocol_type = "HTTP"
   cors_configuration {
     allow_methods = ["POST", "OPTIONS"]
-    allow_origins = ["*"]
+    allow_origins = var.allowed_origins
     allow_headers = ["content-type", "authorization"]
     max_age       = 300
   }
