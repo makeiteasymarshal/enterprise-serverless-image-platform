@@ -43,6 +43,9 @@ def _process_record(record: dict) -> None:
             logger.info("Skipping generated output object: s3://%s/%s", bucket, key)
             continue
 
+        metadata = s3.head_object(Bucket=bucket, Key=key)
+        if metadata.get("ContentLength", 0) > int(os.getenv("MAX_INPUT_BYTES", "10485760")):
+            raise ValueError("Image exceeds configured input size limit")
         source = s3.get_object(Bucket=bucket, Key=key)
         data = source["Body"].read()
         output, content_type = process_image(data, os.getenv("WATERMARK_TEXT"))
