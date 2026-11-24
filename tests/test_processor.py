@@ -14,15 +14,20 @@ def sample_image(fmt="PNG", size=(300, 200)):
 
 def test_png_is_converted_to_jpeg():
     result, content_type = process_image(sample_image())
-    assert result[:2] == b"\xff\xd8"
+    assert result[:2] == b"\\xff\\xd8"
     assert content_type == "image/jpeg"
 
 
-def test_image_is_resized_to_limit(monkeypatch):
-    monkeypatch.setenv("MAX_DIMENSION", "100")
-    result, _ = process_image(sample_image(size=(500, 250)))
+def test_large_image_is_resized():
+    result, _ = process_image(sample_image(size=(2400, 1200)))
     with Image.open(BytesIO(result)) as image:
-        assert max(image.size) <= 1600  # module-level setting is read at import time
+        assert image.size == (1600, 800)
+
+
+def test_watermark_option_returns_valid_jpeg():
+    result, _ = process_image(sample_image(), watermark_text="PILOT")
+    with Image.open(BytesIO(result)) as image:
+        assert image.format == "JPEG"
 
 
 def test_empty_payload_rejected():
