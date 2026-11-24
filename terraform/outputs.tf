@@ -22,3 +22,11 @@ output "processing_queue_url" {
 output "dead_letter_queue_url" {
   value = aws_sqs_queue.dlq.url
 }
+
+output "cognito_user_pool_id" {
+  value = aws_cognito_user_pool.users.id
+}
+
+output "cognito_app_client_id" {
+  value = aws_cognito_user_pool_client.app.id
+}
