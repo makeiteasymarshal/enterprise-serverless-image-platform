@@ -72,7 +72,7 @@ ruff check .
 
 ## GitHub Actions OIDC setup
 
-The workflow in `.github/workflows/deploy.yml` is intentionally manual and gated. Create an AWS IAM OIDC provider for `token.actions.githubusercontent.com`, then create a role whose trust policy restricts the subject to this repository and the protected `main` branch. Add the role ARN as repository variable `AWS_DEPLOY_ROLE_ARN`. The role needs only the actions required by the deployment workflow and Terraform resources. Do not add static AWS access keys.
+The workflow in `.github/workflows/deploy.yml` is a manual OIDC identity check only; it does not deploy resources. Create an AWS IAM OIDC provider for `token.actions.githubusercontent.com`, then create a role whose trust policy restricts the subject to this repository and the protected `main` branch. Add the role ARN as repository variable `AWS_DEPLOY_ROLE_ARN`. Do not add static AWS access keys. The pilot infrastructure is deployed locally after explicit review of the Terraform plan; configure a remote state backend and protected approvals before enabling automated apply.
 
 ## Project milestones
 
