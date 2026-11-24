@@ -14,7 +14,7 @@ def sample_image(fmt="PNG", size=(300, 200)):
 
 def test_png_is_converted_to_jpeg():
     result, content_type = process_image(sample_image())
-    assert result[:2] == b"\\xff\\xd8"
+    assert result[:2] == b"\xff\xd8"
     assert content_type == "image/jpeg"
 
 
