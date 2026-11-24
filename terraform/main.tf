@@ -365,7 +365,7 @@ resource "aws_apigatewayv2_api" "upload" {
   name          = "${local.name}-upload-api"
   protocol_type = "HTTP"
   cors_configuration {
-    allow_methods = ["POST", "OPTIONS"]
+    allow_methods = ["POST", "GET", "OPTIONS"]
     allow_origins = var.allowed_origins
     allow_headers = ["content-type", "authorization"]
     max_age       = 300
