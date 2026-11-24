@@ -202,7 +202,7 @@ resource "aws_iam_role_policy" "processor" {
       },
       {
         Effect = "Allow"
-        Action = ["sqs:ReceiveMessage", "sqs:DeleteMessage", "sqs:GetQueueAttributes"]
+        Action = ["sqs:ReceiveMessage", "sqs:DeleteMessage", "sqs:GetQueueAttributes", "sqs:ChangeMessageVisibility"]
         Resource = [aws_sqs_queue.processing.arn]
       },
       {
