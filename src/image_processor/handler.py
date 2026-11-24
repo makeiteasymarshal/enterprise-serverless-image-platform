@@ -38,7 +38,6 @@ def _process_record(record: dict) -> None:
             continue
         bucket = event_record["s3"]["bucket"]["name"]
         key = unquote_plus(event_record["s3"]["object"]["key"])
-        version_id = event_record["s3"]["object"].get("versionId", "null")
         if key.startswith("processed/"):
             logger.info("Skipping generated output object: s3://%s/%s", bucket, key)
             continue
@@ -59,7 +58,7 @@ def _process_record(record: dict) -> None:
             Metadata={"source-bucket": bucket, "source-key": key},
         )
         table.update_item(
-            Key={"object_id": f"{bucket}/{key}#{version_id}"},
+            Key={"object_id": f"{bucket}/{key}"},
             UpdateExpression="SET #s=:s, output_bucket=:b, output_key=:k, content_type=:c",
             ExpressionAttributeNames={"#s": "status"},
             ExpressionAttributeValues={
