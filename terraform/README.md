@@ -28,12 +28,25 @@ Get the API URL:
 terraform -chdir=terraform output -raw upload_api_url
 ```
 
+Create a Cognito user and confirm the email verification code. Then authenticate and use the returned ID token:
+
+```powershell
+$pool = terraform -chdir=terraform output -raw cognito_user_pool_id
+$client = terraform -chdir=terraform output -raw cognito_app_client_id
+aws cognito-idp sign-up --client-id $client --username "you@example.com" --password "Use-A-Strong-Unique-Password-123!"
+# Read the email verification code, then:
+aws cognito-idp confirm-sign-up --client-id $client --username "you@example.com" --confirmation-code "EMAIL_CODE"
+$auth = aws cognito-idp initiate-auth --client-id $client --auth-flow USER_PASSWORD_AUTH --auth-parameters USERNAME="you@example.com",PASSWORD="Use-A-Strong-Unique-Password-123!" | ConvertFrom-Json
+$token = $auth.AuthenticationResult.IdToken
+```
+
 Request a presigned URL:
 
 ```powershell
 $api = terraform -chdir=terraform output -raw upload_api_url
 $payload = @{ filename = "sample.png"; content_type = "image/png" } | ConvertTo-Json
-$result = Invoke-RestMethod -Method Post -Uri "$api/uploads" -ContentType "application/json" -Body $payload
+$headers = @{ Authorization = "Bearer $token" }
+$result = Invoke-RestMethod -Method Post -Uri "$api/uploads" -Headers $headers -ContentType "application/json" -Body $payload
 Invoke-WebRequest -Method Put -Uri $result.upload_url -InFile ".\sample.png" -ContentType "image/png"
 ```
 
