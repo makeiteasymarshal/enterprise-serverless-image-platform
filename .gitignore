@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.coverage
+dist/
+build/
+.terraform/
+*.tfstate
+*.tfstate.*
+*.zip
+.env
+*.py[cod]
+terraform/.terraform.lock.hcl
