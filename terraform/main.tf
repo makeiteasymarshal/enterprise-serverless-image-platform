@@ -110,7 +110,10 @@ data "aws_iam_policy_document" "s3_to_sqs" {
     sid     = "AllowIncomingBucketEvents"
     effect  = "Allow"
     actions = ["sqs:SendMessage"]
-    principals { type = "Service", identifiers = ["s3.amazonaws.com"] }
+    principals {
+      type        = "Service"
+      identifiers = ["s3.amazonaws.com"]
+    }
     resources = [aws_sqs_queue.processing.arn]
     condition {
       test     = "ArnEquals"
@@ -146,7 +149,10 @@ resource "aws_dynamodb_table" "metadata" {
   name         = "${local.name}-metadata"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "object_id"
-  attribute { name = "object_id", type = "S" }
+  attribute {
+    name = "object_id"
+    type = "S"
+  }
   server_side_encryption { enabled = true }
   point_in_time_recovery { enabled = false }
   tags = local.common_tags
@@ -376,8 +382,10 @@ resource "aws_apigatewayv2_integration" "upload" {
 
 resource "aws_apigatewayv2_route" "upload" {
   api_id    = aws_apigatewayv2_api.upload.id
-  route_key = "POST /uploads"
-  target    = "integrations/${aws_apigatewayv2_integration.upload.id}"
+  route_key          = "POST /uploads"
+  target             = "integrations/${aws_apigatewayv2_integration.upload.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.jwt.id
 }
 
 resource "aws_apigatewayv2_stage" "upload" {
