@@ -217,7 +217,7 @@ resource "aws_iam_role_policy" "processor" {
       },
       {
         Effect = "Allow"
-        Action = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
+        Action = ["logs:CreateLogStream", "logs:PutLogEvents"]
         Resource = ["arn:aws:logs:${var.aws_region}:*:log-group:/aws/lambda/${local.name}-processor:*"]
       }
     ]
