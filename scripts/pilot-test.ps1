@@ -1,5 +1,6 @@
 param(
-  [Parameter(Mandatory = $true)][string]$ImagePath
+  [Parameter(Mandatory = $true)][string]$ImagePath,
+  [Parameter(Mandatory = $true)][string]$JwtToken
 )
 $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $PSScriptRoot
@@ -14,7 +15,8 @@ $ContentType = switch ($Extension) {
   default { throw "Supported extensions: .jpg, .jpeg, .png, .webp" }
 }
 $Payload = @{ filename = [IO.Path]::GetFileName($ImagePath); content_type = $ContentType } | ConvertTo-Json
-$Ticket = Invoke-RestMethod -Method Post -Uri "$Api/uploads" -ContentType "application/json" -Body $Payload
+$Headers = @{ Authorization = "Bearer $JwtToken" }
+$Ticket = Invoke-RestMethod -Method Post -Uri "$Api/uploads" -Headers $Headers -ContentType "application/json" -Body $Payload
 Invoke-WebRequest -Method Put -Uri $Ticket.upload_url -InFile $ImagePath -ContentType $ContentType | Out-Null
 Write-Host "Uploaded object: $($Ticket.object_key)"
 Write-Host "Wait for SQS/Lambda processing, then inspect the processed bucket and DynamoDB table."
