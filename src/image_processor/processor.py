@@ -4,7 +4,8 @@ import io
 import logging
 import os
 import warnings
-from PIL import Image, ImageDraw, ImageFont, ImageOps, UnidentifiedImageError
+
+from PIL import Image, ImageDraw, ImageOps, UnidentifiedImageError
 
 logger = logging.getLogger(__name__)
 MAX_INPUT_BYTES = int(os.getenv("MAX_INPUT_BYTES", "10485760"))
@@ -42,6 +43,10 @@ def process_image(data: bytes, watermark_text: str | None = None) -> tuple[bytes
             output = io.BytesIO()
             image.save(output, format="JPEG", quality=JPEG_QUALITY, optimize=True)
             return output.getvalue(), "image/jpeg"
-    except (UnidentifiedImageError, OSError, Image.DecompressionBombError,
-            Image.DecompressionBombWarning) as exc:
+    except (
+        UnidentifiedImageError,
+        OSError,
+        Image.DecompressionBombError,
+        Image.DecompressionBombWarning,
+    ) as exc:
         raise ValueError("Invalid or unsafe image") from exc
