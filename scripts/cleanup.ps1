@@ -21,7 +21,7 @@ for ($i = 0; $i -lt $objects.Count; $i += 1000) {
     $batch = @($objects[$i..$last])
     $payload = @{ Objects = $batch; Quiet = $true } | ConvertTo-Json -Depth 5
     $tempFile = Join-Path $env:TEMP ("s3-delete-" + [guid]::NewGuid() + ".json")
-    Set-Content -Path $tempFile -Value $payload -Encoding utf8
+    [System.IO.File]::WriteAllText($tempFile, $payload, [System.Text.UTF8Encoding]::new($false))
     aws s3api delete-objects --bucket $Incoming --delete "file://$tempFile"
     Remove-Item $tempFile -Force
     if ($LASTEXITCODE -ne 0) { throw "Failed to delete versions from $Incoming" }
