@@ -27,7 +27,7 @@ S3 notifications enqueue object-created events. SQS buffers bursts and isolates 
 ## Repository layout
 
 - `src/image_processor/`: SQS-triggered Lambda handler and image processing logic.
-- `src/upload_api/`: API Lambda that returns short-lived S3 presigned upload URLs.
+- `src/upload_api/`: Cognito-protected API Lambda that returns short-lived S3 presigned upload URLs.\n- `src/status_api/`: Cognito-protected API Lambda for processing status lookup.
 - `tests/`: unit tests using pytest and moto.
 - `terraform/`: single-region AWS infrastructure, least-privilege IAM, queue/DLQ, buckets, table, topic and Lambda wiring.
 - `.github/workflows/`: Python CI and Terraform validation.
@@ -37,7 +37,7 @@ S3 notifications enqueue object-created events. SQS buffers bursts and isolates 
 
 - The incoming and processed S3 buckets are private with public access blocked and default encryption enabled.
 - S3 sends events to SQS; Lambda consumes SQS messages. A DLQ captures repeatedly failing messages.
-- The processor is idempotent at the object-version level using a DynamoDB conditional write. Duplicate delivery is expected in distributed event systems.
+- The processor writes status using a deterministic source-object key. SQS delivery is at-least-once, so duplicate processing can occur; production deployments should add a conditional idempotency state machine and notification deduplication.
 - Upload API validates filename extension and content type, but production systems must also enforce file-size limits, inspect actual file signatures, malware-scan where appropriate, and apply tenant authorization.
 - The example uses SSE-S3 to avoid requiring customer-managed KMS key administration in a pilot. Adopt SSE-KMS and key policies when required.
 - GitHub Actions uses OIDC only when configured; no long-lived AWS keys are stored.
@@ -46,7 +46,7 @@ S3 notifications enqueue object-created events. SQS buffers bursts and isolates 
 
 ## Local development
 
-Requirements: Python 3.11+, Git. Docker is optional.
+Requirements: Python 3.11+, Git. Docker is required only when building the Lambda deployment ZIP with Pillow for the AWS Linux runtime; it is not required for local unit tests.
 
 ```powershell
 git clone https://github.com/makeiteasymarshal/enterprise-serverless-image-platform.git
@@ -66,7 +66,7 @@ ruff check .
 3. Build the Lambda package with `scripts/build.ps1`.
 4. Run `terraform init`, `terraform fmt -check -recursive`, `terraform validate`, and `terraform plan`.
 5. Inspect every resource and estimated cost. Only then consider `terraform apply`.
-6. Upload a test image using the presigned URL returned by the upload Lambda/API.
+6. Sign in through Cognito, request a short-lived presigned URL from `POST /uploads`, then upload the image to S3.\n7. Check processing with the authenticated `GET /status?key=incoming/<object-key>` endpoint.
 7. Verify the processed object, DynamoDB record, CloudWatch logs, and optional SNS message.
 8. Follow the cleanup instructions in `terraform/README.md`.
 
