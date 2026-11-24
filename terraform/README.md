@@ -19,7 +19,7 @@ terraform -chdir=terraform plan -out=tfplan
 terraform -chdir=terraform apply tfplan
 ```
 
-The stack creates two S3 buckets, SQS + DLQ, Lambda functions, DynamoDB, SNS, API Gateway HTTP API, IAM roles and CloudWatch log groups. These resources may incur charges. The deployment is single-region and is intended for a controlled pilot only.
+The stack creates two S3 buckets, SQS + DLQ, three Lambda functions (upload, processor, status), Cognito User Pool, JWT-protected API Gateway routes, DynamoDB, SNS, IAM roles, CloudWatch log groups and alarms. These resources may incur charges. The deployment is single-region and is intended for a controlled pilot only.
 
 ## Pilot test
 Get the API URL:
@@ -50,10 +50,10 @@ $result = Invoke-RestMethod -Method Post -Uri "$api/uploads" -Headers $headers -
 Invoke-WebRequest -Method Put -Uri $result.upload_url -InFile ".\sample.png" -ContentType "image/png"
 ```
 
-Verify the processed object in the output bucket and inspect Lambda logs / DynamoDB record in the AWS Console.
+Check the authenticated status route with `GET $api/status?key=<object_key>` using the same Bearer token. Verify the processed object in the output bucket and inspect Lambda logs / DynamoDB record in the AWS Console.
 
 ## Destroy
-First empty both buckets. If versioning is enabled, delete all object versions and delete markers. Then:
+Run `..\\scripts\\cleanup.ps1` from the repository root to empty the versioned incoming bucket (including versions/delete markers) and the processed bucket. Then:
 
 ```powershell
 terraform -chdir=terraform plan -destroy
