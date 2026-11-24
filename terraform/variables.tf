@@ -27,3 +27,9 @@ variable "notification_email" {
   type        = string
   default     = ""
 }
+
+variable "allowed_origins" {
+  description = "Explicit browser origins allowed by the HTTP API CORS policy"
+  type        = list(string)
+  default     = ["http://localhost:3000"]
+}
