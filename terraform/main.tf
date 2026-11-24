@@ -234,7 +234,7 @@ resource "aws_lambda_function" "processor" {
   function_name    = "${local.name}-processor"
   role             = aws_iam_role.processor.arn
   filename         = local.processor_zip
-  source_code_hash = filebase64sha256(local.processor_zip)
+  source_code_hash = fileexists(local.processor_zip) ? filebase64sha256(local.processor_zip) : null
   handler          = "image_processor.handler.lambda_handler"
   runtime          = "python3.11"
   timeout          = var.lambda_timeout
